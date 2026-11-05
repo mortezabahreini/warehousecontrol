@@ -11,13 +11,13 @@
             android:textColor="#324760" android:layout_marginBottom="20dp"/>
         <Button android:id="@+id/grant_location"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/permission_grant" android:allCaps="false"/>
+            android:text="@string/permission_grant"/>
         <Button android:id="@+id/background_location"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/permission_background" android:allCaps="false"/>
+            android:text="@string/permission_background"/>
         <Button android:id="@+id/refresh"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:text="@string/refresh_now" android:allCaps="false"/>
+            android:text="@string/refresh_now"/>
         <TextView android:id="@+id/status"
             android:layout_width="match_parent" android:layout_height="wrap_content"
             android:layout_marginTop="22dp" android:text="Checking status…"
