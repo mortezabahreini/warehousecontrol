@@ -2,6 +2,8 @@ name: Build installable Android APK
 on:
   push:
     branches: [transparent-weather-apk]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 jobs:
   android:
