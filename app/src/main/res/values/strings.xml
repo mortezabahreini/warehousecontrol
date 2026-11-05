@@ -1,2 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources><string name="app_name">Tasks &amp; Reminders</string></resources>
+<resources>
+    <string name="app_name">Tasks &amp; Reminders</string>
+    <string name="setup_title">Tasks &amp; Reminders</string>
+    <string name="permission_explanation">Reminders require notification and alarm permissions.</string>
+    <string name="permission_grant">Grant permission</string>
+    <string name="permission_background">Open settings</string>
+    <string name="refresh_now">Refresh now</string>
+</resources>
