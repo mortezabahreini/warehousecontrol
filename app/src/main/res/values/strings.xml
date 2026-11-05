@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Transparent Weather</string>
+    <string name="setup_title">Transparent Weather</string>
+    <string name="permission_explanation">Grant location access, then enable Allow all the time in Android Settings for automatic weather updates. The widget uses your phone’s time zone and refreshes weather approximately every 30 minutes while online.</string>
+    <string name="permission_grant">Grant location permission</string>
+    <string name="permission_background">Open Allow all the time settings</string>
+    <string name="refresh_now">Refresh now</string>
+</resources>
