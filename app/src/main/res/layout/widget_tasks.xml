@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+ android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent"
+ android:orientation="vertical" android:gravity="center_vertical" android:padding="5dp">
+ <LinearLayout android:id="@+id/card" android:layout_width="match_parent" android:layout_height="wrap_content"
+ android:paddingLeft="14dp" android:paddingRight="14dp" android:paddingTop="11dp" android:paddingBottom="11dp"
+ android:orientation="vertical" android:background="@drawable/widget_tasks_bg">
+ <LinearLayout android:layout_width="match_parent" android:layout_height="42dp" android:orientation="horizontal" android:gravity="center_vertical">
+ <TextView android:layout_width="29dp" android:layout_height="wrap_content" android:text="☑" android:textSize="23sp" android:textColor="#EAF3FF"/>
+ <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Tasks &amp; Reminders" android:textColor="#F2F4F8" android:textSize="17sp" android:fontFamily="sans-serif-medium"/>
+ <TextView android:id="@+id/add" android:layout_width="36dp" android:layout_height="36dp" android:gravity="center" android:text="+" android:textSize="28sp" android:textColor="#FFFFFF" android:background="@drawable/widget_add_bg"/>
+ </LinearLayout>
+ <ImageView android:layout_width="match_parent" android:layout_height="1dp" android:background="#4BC7D7ED"/>
+ <LinearLayout android:id="@+id/task1" android:layout_width="match_parent" android:layout_height="53dp" android:gravity="center_vertical" android:orientation="horizontal">
+<TextView android:id="@+id/check1" android:layout_width="31dp" android:layout_height="match_parent" android:gravity="center_vertical" android:text="□" android:textSize="28sp" android:textColor="#92C8FF"/>
+<LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+<TextView android:id="@+id/title1" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tires service (C-HR)" android:maxLines="1" android:ellipsize="end" android:textSize="13sp" android:fontFamily="sans-serif-medium" android:textColor="#F2F4F8"/>
+<TextView android:id="@+id/detail1" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Tomorrow, 10:00 AM" android:maxLines="1" android:ellipsize="end" android:textSize="10sp" android:textColor="#D3D9E2"/>
+</LinearLayout>
+<TextView android:id="@+id/when1" android:layout_width="62dp" android:layout_height="wrap_content" android:gravity="right" android:maxLines="2" android:textSize="11sp" android:textColor="#FFCA8E" android:text="10:00 AM"/>
+<TextView android:id="@+id/delete1" android:layout_width="31dp" android:layout_height="match_parent" android:gravity="center" android:text="×" android:textSize="23sp" android:textColor="#F2F4F8"/>
+</LinearLayout><ImageView android:layout_width="match_parent" android:layout_height="1dp" android:background="#3AD3E0EF"/><LinearLayout android:id="@+id/task2" android:layout_width="match_parent" android:layout_height="53dp" android:gravity="center_vertical" android:orientation="horizontal">
+<TextView android:id="@+id/check2" android:layout_width="31dp" android:layout_height="match_parent" android:gravity="center_vertical" android:text="□" android:textSize="28sp" android:textColor="#92C8FF"/>
+<LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+<TextView android:id="@+id/title2" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Buy milk, eggs, bread" android:maxLines="1" android:ellipsize="end" android:textSize="13sp" android:fontFamily="sans-serif-medium" android:textColor="#F2F4F8"/>
+<TextView android:id="@+id/detail2" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Today, 6:00 PM" android:maxLines="1" android:ellipsize="end" android:textSize="10sp" android:textColor="#D3D9E2"/>
+</LinearLayout>
+<TextView android:id="@+id/when2" android:layout_width="62dp" android:layout_height="wrap_content" android:gravity="right" android:maxLines="2" android:textSize="11sp" android:textColor="#FFCA8E" android:text="10:00 AM"/>
+<TextView android:id="@+id/delete2" android:layout_width="31dp" android:layout_height="match_parent" android:gravity="center" android:text="×" android:textSize="23sp" android:textColor="#F2F4F8"/>
+</LinearLayout><ImageView android:layout_width="match_parent" android:layout_height="1dp" android:background="#3AD3E0EF"/><LinearLayout android:id="@+id/task3" android:layout_width="match_parent" android:layout_height="53dp" android:gravity="center_vertical" android:orientation="horizontal">
+<TextView android:id="@+id/check3" android:layout_width="31dp" android:layout_height="match_parent" android:gravity="center_vertical" android:text="□" android:textSize="28sp" android:textColor="#92C8FF"/>
+<LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+<TextView android:id="@+id/title3" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Gym" android:maxLines="1" android:ellipsize="end" android:textSize="13sp" android:fontFamily="sans-serif-medium" android:textColor="#F2F4F8"/>
+<TextView android:id="@+id/detail3" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Daily, 8:30 PM" android:maxLines="1" android:ellipsize="end" android:textSize="10sp" android:textColor="#D3D9E2"/>
+</LinearLayout>
+<TextView android:id="@+id/when3" android:layout_width="62dp" android:layout_height="wrap_content" android:gravity="right" android:maxLines="2" android:textSize="11sp" android:textColor="#FFCA8E" android:text="10:00 AM"/>
+<TextView android:id="@+id/delete3" android:layout_width="31dp" android:layout_height="match_parent" android:gravity="center" android:text="×" android:textSize="23sp" android:textColor="#F2F4F8"/>
+</LinearLayout>
+ </LinearLayout>
+</LinearLayout>
