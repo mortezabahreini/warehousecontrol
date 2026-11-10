@@ -38,7 +38,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create parmin-counter-v1.0.0 ./ParminCounter.apk \
-            --title "Parmin Counter v1.0.0" \
-            --notes "Simple Persian good/bad behavior counter with manual weekly reset and archived results. No permissions required." \
+          gh release create parmin-counter-v1.0.1 ./ParminCounter.apk \
+            --title "Parmin Counter v1.0.1" \
+            --notes "Fixed startup freeze. Simple Persian positive/negative counter with saved periods and no permissions required." \
             --target parmin-good-bad-counter
