@@ -3,12 +3,9 @@ package com.parmin.counter
 import android.app.Activity
 import android.app.AlertDialog
 import android.graphics.Color
-import android.graphics.Typeface
-import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
-import android.view.WindowInsets
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -18,321 +15,197 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 class MainActivity : Activity() {
-    private val prefs by lazy { getSharedPreferences("parmin_counter", MODE_PRIVATE) }
+    private val storage by lazy { getSharedPreferences("parmin_counter", MODE_PRIVATE) }
     private var good = 0
     private var bad = 0
-    private var started = 0L
+    private var start = 0L
+    private lateinit var positive: TextView
+    private lateinit var negative: TextView
+    private lateinit var summary: TextView
+    private lateinit var started: TextView
 
-    private lateinit var goodCount: TextView
-    private lateinit var badCount: TextView
-    private lateinit var daysLabel: TextView
-    private lateinit var periodLabel: TextView
-    private lateinit var summaryLabel: TextView
-
-    private val dark = Color.rgb(17, 24, 39)
-    private val white = Color.rgb(249, 250, 251)
-    private val muted = Color.rgb(169, 181, 197)
-    private val green = Color.rgb(16, 185, 129)
-    private val pink = Color.rgb(251, 113, 133)
+    private fun dp(value: Int) = (value * resources.displayMetrics.density + 0.5f).toInt()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        good = prefs.getInt("good", 0).coerceAtLeast(0)
-        bad = prefs.getInt("bad", 0).coerceAtLeast(0)
-        started = prefs.getLong("started", 0L)
-        if (started == 0L) {
-            started = System.currentTimeMillis()
-            save()
+        good = storage.getInt("good", 0).coerceAtLeast(0)
+        bad = storage.getInt("bad", 0).coerceAtLeast(0)
+        start = storage.getLong("started", 0)
+        if (start <= 0) {
+            start = System.currentTimeMillis()
+            persist()
         }
-        buildInterface()
-        redraw()
+        createScreen()
+        showCounts()
     }
 
-    private fun dp(value: Int): Int =
-        (value * resources.displayMetrics.density + 0.5f).toInt()
-
-    private fun shape(color: Int, radius: Int = 20, border: Int? = null): GradientDrawable =
-        GradientDrawable().apply {
-            setColor(color)
-            cornerRadius = dp(radius).toFloat()
-            if (border != null) setStroke(dp(1), border)
+    private fun text(value: String, size: Float, color: Int = Color.WHITE): TextView =
+        TextView(this).apply {
+            text = value
+            textSize = size
+            setTextColor(color)
+            gravity = Gravity.CENTER
         }
 
-    private fun label(
-        content: String, size: Float, color: Int,
-        bold: Boolean = false, gravity: Int = Gravity.CENTER
-    ): TextView = TextView(this).apply {
-        text = content
-        textSize = size
-        setTextColor(color)
-        this.gravity = gravity
-        includeFontPadding = true
-        if (bold) setTypeface(Typeface.DEFAULT, Typeface.BOLD)
-    }
-
-    private fun add(
-        parent: LinearLayout, child: View,
-        height: Int = -2, bottom: Int = 0
-    ) {
-        parent.addView(child, LinearLayout.LayoutParams(-1, height).apply {
-            bottomMargin = dp(bottom)
+    private fun add(parent: LinearLayout, view: View, height: Int = -2) {
+        parent.addView(view, LinearLayout.LayoutParams(-1, height).apply {
+            bottomMargin = dp(12)
         })
     }
 
-    private fun buildInterface() {
-        window.statusBarColor = dark
-        window.navigationBarColor = dark
-        val scroll = ScrollView(this).apply {
-            isFillViewport = true
-            setBackgroundColor(dark)
-            clipToPadding = false
-        }
-        val root = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL
-            setPadding(dp(18), dp(18), dp(18), dp(24))
-        }
-        scroll.addView(root)
+    private fun createScreen() {
+        window.statusBarColor = Color.rgb(18, 24, 38)
+        window.navigationBarColor = Color.rgb(18, 24, 38)
+        val scroll = ScrollView(this)
+        scroll.setBackgroundColor(Color.rgb(18, 24, 38))
+        val column = LinearLayout(this)
+        column.orientation = LinearLayout.VERTICAL
+        column.setPadding(dp(20), dp(28), dp(20), dp(28))
+        scroll.addView(column)
         setContentView(scroll)
 
-        // Pad around status/navigation bars on Android 15 while retaining the dark background.
-        root.setOnApplyWindowInsetsListener { view, insets ->
-            val bars = insets.getInsets(
-                WindowInsets.Type.statusBars() or WindowInsets.Type.navigationBars()
-            )
-            view.setPadding(dp(18), dp(18) + bars.top, dp(18), dp(24) + bars.bottom)
-            insets
-        }
+        add(column, text("🌸 شمارنده پارمین", 27f))
+        add(column, text("کارهای خوب و کارهای نیازمند بهبود", 15f, Color.LTGRAY))
+        started = text("", 14f, Color.LTGRAY)
+        add(column, started)
 
-        add(root, label("شمارنده پارمین 🌸", 27f, white, true), bottom = 8)
-        add(root, label("کارهای خوب و کارهایی که باید بهتر شوند", 14f, muted), bottom = 24)
+        val cardRow = LinearLayout(this)
+        cardRow.orientation = LinearLayout.HORIZONTAL
+        val goodCard = LinearLayout(this)
+        goodCard.orientation = LinearLayout.VERTICAL
+        goodCard.setPadding(dp(8), dp(16), dp(8), dp(16))
+        goodCard.setBackgroundColor(Color.rgb(25, 78, 65))
+        val badCard = LinearLayout(this)
+        badCard.orientation = LinearLayout.VERTICAL
+        badCard.setPadding(dp(8), dp(16), dp(8), dp(16))
+        badCard.setBackgroundColor(Color.rgb(87, 43, 64))
+        cardRow.addView(goodCard, LinearLayout.LayoutParams(0, -2, 1f).apply { marginEnd = dp(6) })
+        cardRow.addView(badCard, LinearLayout.LayoutParams(0, -2, 1f).apply { marginStart = dp(6) })
+        add(column, cardRow)
 
-        val timeBox = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            background = shape(Color.rgb(33, 43, 62), 20)
-            setPadding(dp(16), dp(17), dp(16), dp(17))
-        }
-        periodLabel = label("", 14f, white, true)
-        daysLabel = label("", 13f, muted)
-        add(timeBox, periodLabel, bottom = 5)
-        add(timeBox, daysLabel)
-        add(root, timeBox, bottom = 18)
-
-        val pair = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            layoutDirection = View.LAYOUT_DIRECTION_RTL
-        }
-
-        val goodCard = countCard(
-            title = "کارهای خوب",
-            symbol = "✦",
-            color = green,
-            onIncrement = {
+        add(goodCard, text("کارهای خوب ✅", 16f))
+        positive = text("0", 48f)
+        add(goodCard, positive)
+        add(goodCard, Button(this).apply {
+            text = "+۱ مثبت"
+            isAllCaps = false
+            setOnClickListener {
                 if (good < Int.MAX_VALUE) good++
-                save()
-                redraw()
-            },
-            onCorrection = {
+                persist()
+                showCounts()
+            }
+        }, dp(54))
+        add(goodCard, Button(this).apply {
+            text = "−۱ اصلاح"
+            isAllCaps = false
+            setOnClickListener {
                 if (good > 0) good--
-                save()
-                redraw()
-            },
-            assignCount = { goodCount = it }
-        )
-        val badCard = countCard(
-            title = "کارهای بد",
-            symbol = "!",
-            color = pink,
-            onIncrement = {
+                persist()
+                showCounts()
+            }
+        }, dp(48))
+
+        add(badCard, text("کارهای بد ❌", 16f))
+        negative = text("0", 48f)
+        add(badCard, negative)
+        add(badCard, Button(this).apply {
+            text = "+۱ منفی"
+            isAllCaps = false
+            setOnClickListener {
                 if (bad < Int.MAX_VALUE) bad++
-                save()
-                redraw()
-            },
-            onCorrection = {
+                persist()
+                showCounts()
+            }
+        }, dp(54))
+        add(badCard, Button(this).apply {
+            text = "−۱ اصلاح"
+            isAllCaps = false
+            setOnClickListener {
                 if (bad > 0) bad--
-                save()
-                redraw()
-            },
-            assignCount = { badCount = it }
-        )
-        pair.addView(goodCard, LinearLayout.LayoutParams(0, dp(235), 1f).apply {
-            marginEnd = dp(7)
-        })
-        pair.addView(badCard, LinearLayout.LayoutParams(0, dp(235), 1f).apply {
-            marginStart = dp(7)
-        })
-        add(root, pair, bottom = 18)
+                persist()
+                showCounts()
+            }
+        }, dp(48))
 
-        summaryLabel = label("", 17f, white, true)
-        val summaryBox = LinearLayout(this).apply {
-            background = shape(Color.rgb(33, 43, 62))
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(14), dp(18), dp(14), dp(18))
-        }
-        add(summaryBox, label("نتیجه این دوره", 13f, muted), bottom = 7)
-        add(summaryBox, summaryLabel)
-        add(root, summaryBox, bottom = 20)
-
-        val reset = Button(this).apply {
-            text = "↻  ثبت نتیجه و شروع دوره جدید"
-            textSize = 15f
+        summary = text("", 19f)
+        add(column, summary)
+        add(column, Button(this).apply {
+            text = "ثبت نتیجه و شروع هفته جدید"
             isAllCaps = false
-            setTextColor(white)
-            background = shape(Color.rgb(58, 77, 103), 15)
             setOnClickListener { confirmReset() }
-        }
-        add(root, reset, dp(56), 11)
-
-        val history = Button(this).apply {
-            text = "مشاهده دوره‌های قبلی"
-            textSize = 14f
+        }, dp(58))
+        add(column, Button(this).apply {
+            text = "تاریخچه دوره‌های قبلی"
             isAllCaps = false
-            setTextColor(white)
-            background = shape(Color.rgb(37, 49, 68), 15)
             setOnClickListener { showHistory() }
-        }
-        add(root, history, dp(52), 16)
-        add(
-            root,
-            label(
-                "هر بار که پارمین کار خوبی انجام داد، دکمه سبز را بزن. " +
-                    "برای کارهای بد دکمه صورتی را بزن. آمار تا زمان ریست ذخیره می‌ماند.",
-                12f, muted
-            )
-        )
+        }, dp(54))
+        add(column, text("آمار به‌صورت خودکار داخل گوشی ذخیره می‌شود.", 13f, Color.LTGRAY))
     }
 
-    private fun countCard(
-        title: String,
-        symbol: String,
-        color: Int,
-        onIncrement: () -> Unit,
-        onCorrection: () -> Unit,
-        assignCount: (TextView) -> Unit
-    ): LinearLayout = LinearLayout(this).apply {
-        orientation = LinearLayout.VERTICAL
-        gravity = Gravity.CENTER
-        setPadding(dp(8), dp(12), dp(8), dp(12))
-        background = shape(
-            if (color == green) Color.rgb(22, 69, 61) else Color.rgb(81, 43, 62),
-            20, color
-        )
-        add(this, label(symbol, 25f, color, true), bottom = 5)
-        add(this, label(title, 17f, white, true), bottom = 7)
-        val number = label("0", 47f, white, true)
-        assignCount(number)
-        add(this, number, bottom = 5)
-        val plus = Button(this@MainActivity).apply {
-            text = "+۱"
-            textSize = 22f
-            isAllCaps = false
-            setTextColor(dark)
-            background = shape(color, 14)
-            contentDescription = "افزودن یک مورد به " + title
-            setOnClickListener { onIncrement() }
-        }
-        add(this, plus, dp(48), 5)
-        val minus = TextView(this@MainActivity).apply {
-            text = "اصلاح اشتباه: −۱"
-            textSize = 11f
-            setTextColor(muted)
-            gravity = Gravity.CENTER
-            setPadding(0, dp(5), 0, dp(5))
-            contentDescription = "کم کردن یک مورد از " + title
-            setOnClickListener { onCorrection() }
-        }
-        add(this, minus, dp(30))
-    }
-
-    private fun formatDate(whenMillis: Long): String =
-        SimpleDateFormat("dd/MM/yyyy", Locale.US).format(Date(whenMillis))
-
-    private fun redraw() {
-        goodCount.text = good.toString()
-        badCount.text = bad.toString()
-        periodLabel.text = "شروع دوره: " + formatDate(started)
-        val passedDays = TimeUnit.MILLISECONDS.toDays(
-            (System.currentTimeMillis() - started).coerceAtLeast(0L)
-        ) + 1L
-        daysLabel.text = "روز " + passedDays + " از دوره فعلی"
-        val difference = good - bad
-        val sign = if (difference > 0) "+" else ""
-        summaryLabel.text =
-            "مثبت: " + good + "   •   منفی: " + bad + "   •   خالص: " + sign + difference
-    }
-
-    private fun save() {
-        prefs.edit()
+    private fun persist() {
+        storage.edit()
             .putInt("good", good)
             .putInt("bad", bad)
-            .putLong("started", started)
+            .putLong("started", start)
             .apply()
     }
 
+    private fun date(timestamp: Long) =
+        SimpleDateFormat("dd/MM/yyyy", Locale.US).format(Date(timestamp))
+
+    private fun showCounts() {
+        positive.text = good.toString()
+        negative.text = bad.toString()
+        started.text = "شروع دوره: " + date(start)
+        summary.text = "مثبت: $good     منفی: $bad"
+    }
+
+    private fun history(): JSONArray = try {
+        JSONArray(storage.getString("history", "[]") ?: "[]")
+    } catch (_: Exception) { JSONArray() }
+
     private fun confirmReset() {
         AlertDialog.Builder(this)
-            .setTitle("پایان این دوره؟")
-            .setMessage(
-                "نتیجه این دوره در تاریخچه ذخیره می‌شود.\n" +
-                    "کارهای خوب: " + good + "\nکارهای بد: " + bad +
-                    "\n\nشمارنده‌ها از صفر شروع شوند؟"
-            )
+            .setTitle("شروع دوره جدید؟")
+            .setMessage("آمار فعلی: $good مثبت و $bad منفی\nنتیجه در تاریخچه ذخیره خواهد شد.")
             .setNegativeButton("لغو", null)
-            .setPositiveButton("ذخیره و ریست") { _, _ ->
-                val end = System.currentTimeMillis()
-                val archive = loadHistory()
-                archive.put(
-                    JSONObject().apply {
-                        put("start", started)
-                        put("end", end)
-                        put("good", good)
-                        put("bad", bad)
-                    }
-                )
+            .setPositiveButton("ثبت و ریست") { _, _ ->
+                val archived = history()
+                val entry = JSONObject()
+                entry.put("start", start)
+                entry.put("end", System.currentTimeMillis())
+                entry.put("good", good)
+                entry.put("bad", bad)
+                archived.put(entry)
                 val limited = JSONArray()
-                for (i in (archive.length() - 52).coerceAtLeast(0) until archive.length()) {
-                    limited.put(archive.getJSONObject(i))
+                for (index in maxOf(0, archived.length() - 52) until archived.length()) {
+                    limited.put(archived.getJSONObject(index))
                 }
-                prefs.edit().putString("history", limited.toString()).apply()
+                storage.edit().putString("history", limited.toString()).apply()
                 good = 0
                 bad = 0
-                started = end
-                save()
-                redraw()
+                start = System.currentTimeMillis()
+                persist()
+                showCounts()
             }
             .show()
     }
 
-    private fun loadHistory(): JSONArray = try {
-        JSONArray(prefs.getString("history", "[]") ?: "[]")
-    } catch (_: Exception) {
-        JSONArray()
-    }
-
     private fun showHistory() {
-        val archive = loadHistory()
+        val archived = history()
         val result = StringBuilder()
-        if (archive.length() == 0) {
-            result.append("هنوز دوره‌ای ثبت نشده است.")
-        } else {
-            for (index in archive.length() - 1 downTo 0) {
-                val entry = archive.getJSONObject(index)
-                result.append(formatDate(entry.getLong("start")))
-                result.append(" تا ")
-                result.append(formatDate(entry.getLong("end")))
-                result.append("\n")
-                result.append("مثبت: ")
-                result.append(entry.getInt("good"))
-                result.append("     منفی: ")
-                result.append(entry.getInt("bad"))
-                result.append("\n\n")
-            }
+        if (archived.length() == 0) result.append("هنوز دوره‌ای ثبت نشده.")
+        for (index in archived.length() - 1 downTo 0) {
+            val item = archived.getJSONObject(index)
+            result.append(date(item.getLong("start"))).append(" تا ")
+                .append(date(item.getLong("end"))).append("\n")
+                .append("مثبت: ").append(item.getInt("good"))
+                .append("  منفی: ").append(item.getInt("bad")).append("\n\n")
         }
         AlertDialog.Builder(this)
-            .setTitle("تاریخچه دوره‌ها")
+            .setTitle("تاریخچه")
             .setMessage(result.toString())
             .setPositiveButton("بستن", null)
             .show()
